@@ -19,25 +19,22 @@ func NewTaskController(taskusecase *usecase.Taskusecase) *TaskController {
 	}
 }
 
-
 // タスクを登録する
 func (tc *TaskController) CreateTask(c *gin.Context) {
 	var input struct {
 		Name       string      `json:"name" binding:"required"`
-		UserID     user.UserId `json:"user_id" binding:"required"`
+		UserId     user.UserId `json:"user_id" binding:"required"`
 		DueDate    string      `json:"due_date" binding:"required"`
 		DelayCount int         `json:"delay_count" binding:"required"`
 	}
 
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
 	}
 
-	taskID, err := tc.taskusecase.CreateTask(input.Name, input.UserID, input.DueDate, input.DelayCount)
+	taskID, err := tc.taskusecase.CreateTask(input.Name, input.UserId, input.DueDate, input.DelayCount)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
 	}
 
 	c.JSON(http.StatusCreated, gin.H{"task_id": taskID})
