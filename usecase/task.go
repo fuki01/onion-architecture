@@ -6,19 +6,25 @@ import (
 	"github.com/fuki01/onion-architecture/domain/user"
 )
 
-type Taskusecase struct {
+type TaskUsecase interface {
+	CreateTask(name string, userId user.UserId, dueDate string) (task.TaskId, error)
+	ExtendDueDate(id task.TaskId, dueDate string) error
+	ChangeStatus(id task.TaskId, newStatus task.TaskStatus) error
+}
+
+type taskUsecase struct {
 	taskRepository repository.TaskRepository
 }
 
-func NewTaskUsecase(taskRepository repository.TaskRepository) *Taskusecase {
-	return &Taskusecase{
+func NewTaskUsecase(taskRepository repository.TaskRepository) TaskUsecase {
+	return &taskUsecase{
 		taskRepository: taskRepository,
 	}
 }
 
 // タスクを登録する
-func (tu *Taskusecase) CreateTask(name string, userId user.UserId, dueDate string, delayCount int) (task.TaskId, error) {
-	task := task.NewTask(name, userId, dueDate, delayCount)
+func (tu *taskUsecase) CreateTask(name string, userId user.UserId, dueDate string) (task.TaskId, error) {
+	task := task.NewTask(name, userId, dueDate)
 
 	if err := task.Validate(); err != nil {
 		return 0, err
@@ -35,10 +41,7 @@ func (tu *Taskusecase) CreateTask(name string, userId user.UserId, dueDate strin
 }
 
 // タスクの期限を延長する
-func (tu *Taskusecase) ExtendDueDate(
-	id task.TaskId,
-	dueDate string,
-) error {
+func (tu *taskUsecase) ExtendDueDate(id task.TaskId, dueDate string) error {
 	task, err := tu.taskRepository.FindById(id)
 	if err != nil {
 		return err
@@ -49,10 +52,7 @@ func (tu *Taskusecase) ExtendDueDate(
 }
 
 // タスクのステータスを変更する
-func (tu *Taskusecase) ChangeStatus(
-	id task.TaskId,
-	newStatus task.TaskStatus,
-) error {
+func (tu *taskUsecase) ChangeStatus(id task.TaskId, newStatus task.TaskStatus) error {
 	task, err := tu.taskRepository.FindById(id)
 	if err != nil {
 		return err

@@ -43,7 +43,7 @@ func TestCreateTask(t *testing.T) {
 		return mockRepo
 	}
 
-	createUsecase := func(mockRepo *MockTaskRepository) *usecase.Taskusecase {
+	createUsecase := func(mockRepo *MockTaskRepository) usecase.TaskUsecase {
 		return usecase.NewTaskUsecase(mockRepo)
 	}
 
@@ -51,7 +51,7 @@ func TestCreateTask(t *testing.T) {
 		mockRepo := createMock(task.TaskId(1), nil)
 		usecase := createUsecase(mockRepo)
 
-		taskId, err := usecase.CreateTask("test", user.UserId(1), "2024-01-01", 1)
+		taskId, err := usecase.CreateTask("test", user.UserId(1), "2024-01-01")
 
 		assert.NoError(t, err)
 		assert.Equal(t, task.TaskId(1), taskId)
@@ -62,7 +62,7 @@ func TestCreateTask(t *testing.T) {
 		mockRepo := createMock(task.TaskId(1), nil)
 		usecase := createUsecase(mockRepo)
 
-		taskId, err := usecase.CreateTask("", user.UserId(1), "2024-01-01", 1)
+		taskId, err := usecase.CreateTask("", user.UserId(1), "2024-01-01")
 		assert.Error(t, err)
 		assert.Equal(t, task.TaskId(0), taskId)
 	})
@@ -71,7 +71,7 @@ func TestCreateTask(t *testing.T) {
 		mockRepo := createMock(task.TaskId(0), errors.New("repository error"))
 		usecase := createUsecase(mockRepo)
 
-		taskId, err := usecase.CreateTask("test", user.UserId(1), "2024-01-01", 1)
+		taskId, err := usecase.CreateTask("test", user.UserId(1), "2024-01-01")
 
 		assert.Error(t, err)
 		assert.Equal(t, task.TaskId(0), taskId)
@@ -88,13 +88,13 @@ func TestExtendDueDate(t *testing.T) {
 		return mockRepo
 	}
 
-	createUsecase := func(mock *MockTaskRepository) *usecase.Taskusecase {
+	createUsecase := func(mock *MockTaskRepository) usecase.TaskUsecase {
 		return usecase.NewTaskUsecase(mock)
 	}
 
 	t.Run("success", func(t *testing.T) {
 		// 初期値の設定
-		existingTask := task.NewTask("test", user.UserId(1), "2024-01-01", 1)
+		existingTask := task.NewTask("test", user.UserId(1), "2024-01-01")
 		existingTask.Id = task.TaskId(1)
 
 		// モック作成
@@ -107,13 +107,13 @@ func TestExtendDueDate(t *testing.T) {
 		// 検証
 		assert.NoError(t, err)
 		assert.Equal(t, "2024-01-02", existingTask.DueDate)
-		assert.Equal(t, 2, existingTask.DelayCount)
+		assert.Equal(t, 1, existingTask.DelayCount)
 		mockRepo.AssertExpectations(t)
 	})
 
 	t.Run("find error", func(t *testing.T) {
 		// 初期値の設定
-		existingTask := task.NewTask("test", user.UserId(1), "2024-01-01", 1)
+		existingTask := task.NewTask("test", user.UserId(1), "2024-01-01")
 		existingTask.Id = task.TaskId(1)
 
 		// モック作成
@@ -126,7 +126,7 @@ func TestExtendDueDate(t *testing.T) {
 
 	t.Run("update error", func(t *testing.T) {
 		// 初期値の設定
-		existingTask := task.NewTask("test", user.UserId(1), "2024-01-01", 1)
+		existingTask := task.NewTask("test", user.UserId(1), "2024-01-01")
 		existingTask.Id = task.TaskId(1)
 
 		// モック作成
@@ -146,13 +146,13 @@ func TestChangeStatus(t *testing.T) {
 		return mockRepo
 	}
 
-	createUsecase := func(mock *MockTaskRepository) *usecase.Taskusecase {
+	createUsecase := func(mock *MockTaskRepository) usecase.TaskUsecase {
 		return usecase.NewTaskUsecase(mock)
 	}
 
 	t.Run("success", func(t *testing.T) {
 		// 初期値の設定
-		existingTask := task.NewTask("test", user.UserId(1), "2024-01-01", 1)
+		existingTask := task.NewTask("test", user.UserId(1), "2024-01-01")
 		existingTask.Id = task.TaskId(1)
 
 		// モック作成
@@ -170,7 +170,7 @@ func TestChangeStatus(t *testing.T) {
 
 	t.Run("find error", func(t *testing.T) {
 		// 初期値の設定
-		existingTask := task.NewTask("test", user.UserId(1), "2024-01-01", 1)
+		existingTask := task.NewTask("test", user.UserId(1), "2024-01-01")
 		existingTask.Id = task.TaskId(1)
 
 		// モック作成
@@ -183,7 +183,7 @@ func TestChangeStatus(t *testing.T) {
 
 	t.Run("update error", func(t *testing.T) {
 		// 初期値の設定
-		existingTask := task.NewTask("test", user.UserId(1), "2024-01-01", 1)
+		existingTask := task.NewTask("test", user.UserId(1), "2024-01-01")
 		existingTask.Id = task.TaskId(1)
 
 		// モック作成
@@ -196,7 +196,7 @@ func TestChangeStatus(t *testing.T) {
 
 	t.Run("invalid status", func(t *testing.T) {
 		// 初期値の設定
-		existingTask := task.NewTask("test", user.UserId(1), "2024-01-01", 1)
+		existingTask := task.NewTask("test", user.UserId(1), "2024-01-01")
 		existingTask.Id = task.TaskId(1)
 
 		// モック作成

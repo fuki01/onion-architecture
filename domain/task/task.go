@@ -14,7 +14,7 @@ const (
 )
 
 type Task struct {
-	Id         TaskId      `json:"id"`
+	Id         TaskId      `json:"id" gorm:"primaryKey"`
 	Name       string      `json:"name"`
 	UserId     user.UserId `json:"user_id"`
 	Status     TaskStatus  `json:"status"`
@@ -22,13 +22,13 @@ type Task struct {
 	DelayCount int         `json:"delay_count"`
 }
 
-func NewTask(name string, userId user.UserId, dueDate string, delayCount int) *Task {
+func NewTask(name string, userId user.UserId, dueDate string) *Task {
 	return &Task{
 		Name:       name,
 		UserId:     userId,
 		Status:     "未完了",
 		DueDate:    dueDate,
-		DelayCount: delayCount,
+		DelayCount: 0,
 	}
 }
 
@@ -45,10 +45,6 @@ func (t *Task) Validate() error {
 		return errors.New("invalid due date")
 	}
 
-	if t.DelayCount < 0 {
-		return errors.New("invalid delay count")
-	}
-
 	return nil
 }
 
@@ -62,5 +58,3 @@ func (t *Task) SetStatus(newStatus TaskStatus) error {
 	}
 	return nil
 }
-
-
