@@ -2,7 +2,9 @@ package controller
 
 import (
 	"net/http"
+	"strconv"
 
+	"github.com/fuki01/onion-architecture/domain/user"
 	"github.com/fuki01/onion-architecture/presentation/request"
 	"github.com/fuki01/onion-architecture/usecase"
 
@@ -72,4 +74,21 @@ func (tc *TaskController) ChangeStatus(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "success"})
+}
+
+// タスク一覧をユーザーIDで取得する
+func (tc *TaskController) GetTask(c *gin.Context) {
+	userID, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	task, err := tc.taskusecase.GetTasksByUserId(user.UserId(userID))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, task)
 }

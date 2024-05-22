@@ -14,6 +14,7 @@ func SetupRouter(taskController *controller.TaskController) *gin.Engine {
 		tasks := v1.Group("/tasks")
 		{
 			tasks.POST("", taskController.CreateTask)
+			tasks.GET("/:id", taskController.GetTask)
 			tasks.PUT("/:id/extend", taskController.ExtendDueDate)
 			tasks.PUT("/:id/status", taskController.ChangeStatus)
 		}

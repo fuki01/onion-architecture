@@ -10,6 +10,7 @@ type TaskUsecase interface {
 	CreateTask(name string, userId user.UserId, dueDate string) (task.TaskId, error)
 	ExtendDueDate(id task.TaskId, dueDate string) error
 	ChangeStatus(id task.TaskId, newStatus task.TaskStatus) error
+	GetTasksByUserId(userId user.UserId) ([]*task.Task, error)
 }
 
 type taskUsecase struct {
@@ -61,4 +62,10 @@ func (tu *taskUsecase) ChangeStatus(id task.TaskId, newStatus task.TaskStatus) e
 		return err
 	}
 	return tu.taskRepository.Update(task)
+}
+
+
+// タスク一覧をユーザーIDで取得する
+func (tu *taskUsecase) GetTasksByUserId(userId user.UserId) ([]*task.Task, error) {
+	return tu.taskRepository.FindByUserId(userId)
 }

@@ -25,6 +25,11 @@ func (m *MockTaskRepository) FindById(id task.TaskId) (*task.Task, error) {
 	return args.Get(0).(*task.Task), args.Error(1)
 }
 
+func (m *MockTaskRepository) FindByUserId(userId user.UserId) ([]*task.Task, error) {
+	args := m.Called(userId)
+	return args.Get(0).([]*task.Task), args.Error(1)
+}
+
 func (m *MockTaskRepository) Update(task *task.Task) error {
 	args := m.Called(task)
 	return args.Error(0)
@@ -208,5 +213,48 @@ func TestChangeStatus(t *testing.T) {
 
 		// 検証
 		assert.Error(t, err)
+	})
+}
+
+func TestGetTasksByUserId(t *testing.T) {
+	createMock := func(tasks []*task.Task, returnErr error) *MockTaskRepository {
+		mockRepo := new(MockTaskRepository)
+		mockRepo.On("FindByUserId", mock.AnythingOfType("user.UserId")).Return(tasks, returnErr)
+		return mockRepo
+	}
+
+	createUsecase := func(mock *MockTaskRepository) usecase.TaskUsecase {
+		return usecase.NewTaskUsecase(mock)
+	}
+
+	t.Run("success", func(t *testing.T) {
+		// 初期値の設定
+		tasks := []*task.Task{
+			task.NewTask("test1", user.UserId(1), "2024-01-01"),
+			task.NewTask("test2", user.UserId(1), "2024-01-02"),
+		}
+
+		// モック作成
+		mockRepo := createMock(tasks, nil)
+		usecase := createUsecase(mockRepo)
+
+		// 検証
+		result, err := usecase.GetTasksByUserId(user.UserId(1))
+		assert.NoError(t, err)
+		assert.Equal(t, tasks, result)
+		mockRepo.AssertExpectations(t)
+	})
+
+	t.Run("error", func(t *testing.T) {
+		// モック作成
+		mockRepo := createMock(nil, errors.New("repository error"))
+		usecase := createUsecase(mockRepo)
+
+		// 検証
+		result, err := usecase.GetTasksByUserId(user.UserId(1))
+		assert.Error(t, err)
+		assert.Nil(t, result)
+		assert.Contains(t, err.Error(), "repository error")
+		mockRepo.AssertExpectations(t)
 	})
 }

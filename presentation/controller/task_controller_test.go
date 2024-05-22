@@ -34,6 +34,11 @@ func (m *MockTaskUsecase) ChangeStatus(id task.TaskId, newStatus task.TaskStatus
 	return args.Error(0)
 }
 
+func (m *MockTaskUsecase) GetTasksByUserId(userId user.UserId) ([]*task.Task, error) {
+	args := m.Called(userId)
+	return args.Get(0).([]*task.Task), args.Error(1)
+}
+
 func TestNewTaskController(t *testing.T) {
 	mockUsecase := new(MockTaskUsecase)
 	tc := controller.NewTaskController(mockUsecase)
@@ -178,6 +183,71 @@ func TestTaskControllerChangeStatus(t *testing.T) {
 			r.ServeHTTP(w, req)
 
 			fmt.Println("body", w.Body.String())
+			assert.Equal(t, tc.expectedStatus, w.Code)
+			mockUsecase.AssertExpectations(t)
+		})
+	}
+}
+
+func TestTaskControllerGetTasksByUserId(t *testing.T) {
+	testCases := []struct {
+		name           string
+		mockSetup      func(m *MockTaskUsecase)
+		params         string
+		expectedStatus int
+	}{
+		{
+			name: "Success",
+			mockSetup: func(m *MockTaskUsecase) {
+				m.On("GetTasksByUserId", user.UserId(1)).Return([]*task.Task{
+					{
+						Id:         1,
+						Name:       "タスク名",
+						UserId:     1,
+						DueDate:    "2021-01-01",
+						Status:     task.StatusIncomplete,
+						DelayCount: 0,
+					},
+				}, nil)
+			},
+			params:         "1",
+			expectedStatus: http.StatusOK,
+		},
+		{
+			name: "Usecase Error",
+			mockSetup: func(m *MockTaskUsecase) {
+				m.On("GetTasksByUserId", user.UserId(1)).Return(nil, fmt.Errorf("error"))
+			},
+			params:         "1",
+			expectedStatus: http.StatusInternalServerError,
+		},
+		{
+			name:           "Params Error",
+			mockSetup:      func(m *MockTaskUsecase) {},
+			params:         "abc",
+			expectedStatus: http.StatusBadRequest,
+		},
+
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			mockUsecase := new(MockTaskUsecase)
+			tc.mockSetup(mockUsecase)
+
+			controller := controller.NewTaskController(mockUsecase)
+
+			req, _ := http.NewRequest("GET", "/tasks/"+tc.params, nil)
+			w := httptest.NewRecorder()
+
+			r := gin.Default()
+
+			r.GET("/tasks/:id", controller.GetTask)
+			r.ServeHTTP(w, req)
+
+			fmt.Println("body", w.Body.String())
+			fmt.Println("status", w.Code)
+			fmt.Println("expected", tc.expectedStatus)
 			assert.Equal(t, tc.expectedStatus, w.Code)
 			mockUsecase.AssertExpectations(t)
 		})

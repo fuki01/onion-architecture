@@ -13,3 +13,12 @@ type SuccessResponse struct {
 type ErrorResponse struct {
 	Error string `json:"error"`
 }
+
+
+type GetTaskResponse struct {
+	TaskID   task.TaskId `json:"task_id"`
+	Name     string      `json:"name"`
+	DueDate  string      `json:"due_date"`
+	Status   string      `json:"status"`
+	DelayCnt int         `json:"delay_cnt"`
+}

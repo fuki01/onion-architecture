@@ -7,6 +7,7 @@ import (
 
 	"github.com/fuki01/onion-architecture/domain/repository"
 	"github.com/fuki01/onion-architecture/domain/task"
+	"github.com/fuki01/onion-architecture/domain/user"
 )
 
 type taskPersistence struct {
@@ -28,6 +29,14 @@ func (tr *taskPersistence) FindById(id task.TaskId) (*task.Task, error) {
 	return &t, nil
 }
 
+// FindByUserId は指定したユーザーIDのタスクを取得する
+func (tr *taskPersistence) FindByUserId(userId user.UserId) ([]*task.Task, error) {
+	var tasks []*task.Task
+	if err := tr.db.Where("user_id = ?", userId).Find(&tasks).Error; err != nil {
+		return nil, err
+	}
+	return tasks, nil
+}
 
 // Insert はタスクを登録する
 func (tr *taskPersistence) Insert(t *task.Task) (task.TaskId, error) {
@@ -46,4 +55,3 @@ func (tr *taskPersistence) Update(t *task.Task) error {
 func (tr *taskPersistence) Delete(t *task.Task) error {
 	return tr.db.Delete(t).Error
 }
-
