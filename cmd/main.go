@@ -1,18 +1,39 @@
 package main
 
 import (
+	"fmt"
+	"os"
+
 	"github.com/fuki01/onion-architecture/domain/task"
 	"github.com/fuki01/onion-architecture/infrastructure"
+	"github.com/fuki01/onion-architecture/infrastructure/config"
 	"github.com/fuki01/onion-architecture/presentation/controller"
 	"github.com/fuki01/onion-architecture/presentation/router"
 	"github.com/fuki01/onion-architecture/usecase"
-	"gorm.io/driver/sqlite"
-	"gorm.io/gorm"
+	"github.com/joho/godotenv"
 )
 
+func loadEnv(envfile string) {
+	err := godotenv.Load(envfile)
+	fmt.Println("err: ", err)
+	if err != nil {
+		panic("no env file")
+	}
+}
+
 func main() {
-	// データベース接続を設定
-	db, err := gorm.Open(sqlite.Open("database.db"), &gorm.Config{})
+	// 環境変数を読み込む
+	loadEnv(".env")
+	user := os.Getenv("DB_USER")
+	pass := os.Getenv("DB_PASS")
+	host := os.Getenv("DB_HOST")
+	dbname := os.Getenv("DB_NAME")
+
+	if user == "" || pass == "" || host == "" || dbname == "" {
+		panic("failed to load env")
+	}
+
+	db, err := config.NewDatabase(user, pass, host, dbname).Connect()
 	if err != nil {
 		panic("failed to connect database")
 	}
@@ -36,5 +57,4 @@ func main() {
 
 	// サーバーを起動
 	r.Run(":8080")
-
 }

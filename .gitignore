@@ -1,2 +1,5 @@
 /.DS_Store
 /database.db
+docker/db/data/
+mysql_data/
+.dbdata/
