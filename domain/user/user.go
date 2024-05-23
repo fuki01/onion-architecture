@@ -11,7 +11,7 @@ type User struct {
 
 func (u *User) Validate() error {
 	if u.Name == "" {
-		return errors.New("invalid email format")
+		return errors.New("invalid name")
 	}
 	return nil
 }
